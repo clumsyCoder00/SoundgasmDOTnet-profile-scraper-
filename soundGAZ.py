@@ -12,6 +12,7 @@ import datetime
 # user-defined URL of profile
 # EXAMPLE: "https://soundgasm.net/u/USERNAME"
 
+# ---- PASTE SOUNDGASM USERNAME TO THIS LINE ----
 url = "https://soundgasm.net/u/<USERNAME>"
 
 # username extraction for folder creation
@@ -22,6 +23,7 @@ totalItems = 0
 newItems = 0
 existItems = 0
 
+# ---- REVISE THIS PATH TO MATCH YOUR FILE STRUCTURE ----
 userDirectory = "/mnt/pond/media/Audio/GWA/{0}".format(user)
 
 if not(os.path.exists(userDirectory)):
@@ -65,15 +67,16 @@ for sound_link in fileList:
 	title = ""
 	link = ""
 	descr = ""
-
+	releaseDate = ""
+	trackNum = ""
+  
 	recordingPage = sound_link.get_attribute("href")
 	url_split = recordingPage.split("/")
 
 	# ---- get recording title ----
 	title = url_split[-1].replace("-", " ")  # make pretty
-	
-	# ---- CHANGE THIS PATH ----
-	recording_path = '/path/to/media/{0}/{1}.m4a'.format(user, title)
+
+	recording_path = '/mnt/pond/media/Audio/GWA/{0}/{1}.m4a'.format(user, title)
 	if not(os.path.isfile(recording_path)):
 		#print("Title: " + title)
 		recording_driver.get(recordingPage)
@@ -98,21 +101,22 @@ for sound_link in fileList:
     
 		# ---- get date of soundgasm file, seems to be the upload date ----            
 		modDate = os.path.getmtime(recording_path) # %m/%d/%Y
-		releaseDate = (datetime.datetime.fromtimestamp(modDate).strftime("%m-%d-%Y"))
+		# releaseDate = (datetime.datetime.fromtimestamp(modDate).strftime("%m-%d-%Y"))
+		releaseDate = (datetime.datetime.fromtimestamp(modDate).strftime("%Y-%m-%d"))
 		print(releaseDate + " " + title)
 		with open(recording_path, 'r+b') as file:
 			media_file = mutagen.File(file, easy=True)
 			media_file['title'] = title
-			media_file['album'] = title
+			media_file['album'] = user # title
 			media_file['artist'] = user
 			media_file['comment'] = descr
 			media_file['date'] = releaseDate
+			media_file['tracknumber'] = str((totalItems - (newItems + existItems))) + '/0'
 			media_file.save(file)
 		newItems = newItems + 1
 
 	else:
 		existItems = existItems + 1
-		# print("\talready exists")
 
 print("\n---- Track Summary ----\nExisting:\t" + str(existItems) + "\nNew:\t\t" + str(newItems)+ "\nTotal:\t\t" + str(totalItems))
 driver.quit()
