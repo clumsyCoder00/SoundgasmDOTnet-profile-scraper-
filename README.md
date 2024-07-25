@@ -1,6 +1,6 @@
 # SoundgasmDOTnet profile scraper  
 
-A re-write and refinement of the original script.  
+A re-write of the original script.  
 
 Improvements:  
 - check for existing files and directory before downloading new files from site, allows for incremental updates to existing file collections.  
