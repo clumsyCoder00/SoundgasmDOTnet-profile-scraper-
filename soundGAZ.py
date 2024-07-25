@@ -71,8 +71,9 @@ for sound_link in fileList:
 
 	# ---- get recording title ----
 	title = url_split[-1].replace("-", " ")  # make pretty
-
-	recording_path = '/mnt/pond/media/Audio/GWA/{0}/{1}.m4a'.format(user, title)
+	
+	# ---- CHANGE THIS PATH ----
+	recording_path = '/path/to/media/{0}/{1}.m4a'.format(user, title)
 	if not(os.path.isfile(recording_path)):
 		#print("Title: " + title)
 		recording_driver.get(recordingPage)
