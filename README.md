@@ -10,6 +10,7 @@ Changes:
   - Artist - Soundgasm user  
   - Comment - recording description in Soundgasm  
   - Date - release date based on Soundgasm file metadata
+  - Track Number - keeps tracks in order of date published to site
 - omitted raw.txt file usage, was causing issues when re-checking collections for new files
 
 ### NEW DEPENDENCY
