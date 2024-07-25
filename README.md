@@ -2,7 +2,7 @@
 
 A re-write of the original script.  
 
-Improvements:  
+Changes:  
 - check for existing files and directory before downloading new files from site, allows for incremental updates to existing file collections.  
 - use of mutagen to set metatdata in file to be populated with content from site. Metadata includes:  
   - Title - title of track  
