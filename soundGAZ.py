@@ -13,7 +13,7 @@ import datetime
 # EXAMPLE: "https://soundgasm.net/u/USERNAME"
 
 # ---- PASTE SOUNDGASM USERNAME TO THIS LINE ----
-url = "https://soundgasm.net/u/CelestialBody"
+url = "https://soundgasm.net/u/<USERNAME>"
 
 # ---- REVISE THIS PATH TO MATCH YOUR FILE STRUCTURE ----
 rootDirectory = "/mnt/pond/media/Audio/GWA"
