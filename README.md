@@ -19,7 +19,7 @@ Changes:
 A rather elementary profile scraper that will download all the publicly available audio files associated with any one account. This script requires selenium Webdriver specifically the Chrome variant.   
 **This script requires editing to function.**   
 - You are required to manually paste in the link to the profile you wish to scrape.  
-- You are required to manually enter the path to which the files are to be downloaded, change the prefix of the `recording_path` variable (IN TWO LOCATIONS).   
+- You are required to manually enter the path to which the files are to be downloaded, change the prefix of the `rootDirectory` variable.   
 
 ### Requirements  
 Python 3.7+  
