@@ -13,7 +13,10 @@ import datetime
 # EXAMPLE: "https://soundgasm.net/u/USERNAME"
 
 # ---- PASTE SOUNDGASM USERNAME TO THIS LINE ----
-url = "https://soundgasm.net/u/<USERNAME>"
+url = "https://soundgasm.net/u/CelestialBody"
+
+# ---- REVISE THIS PATH TO MATCH YOUR FILE STRUCTURE ----
+rootDirectory = "/mnt/pond/media/Audio/GWA"
 
 # username extraction for folder creation
 userSplit = url.split("/")
@@ -23,8 +26,7 @@ totalItems = 0
 newItems = 0
 existItems = 0
 
-# ---- REVISE THIS PATH TO MATCH YOUR FILE STRUCTURE ----
-userDirectory = "/mnt/pond/media/Audio/GWA/{0}".format(user)
+userDirectory = "{0}/{1}".format(rootDirectory, user)
 
 if not(os.path.exists(userDirectory)):
   make_Command = "mkdir " + userDirectory
@@ -50,9 +52,7 @@ driver.set_page_load_timeout(60)
 recording_driver = webdriver.Chrome(options=options)
 recording_driver.set_page_load_timeout(60)
 
-print("Getting file list...")
-
-####################################################################################
+print("Getting URL list...")
 
 # profile get
 driver.get(url)
@@ -60,63 +60,66 @@ driver.get(url)
 fileList = driver.find_elements(By.XPATH,'/html/body/div[*]/a')
 totalItems = len(fileList)
 
-print("Checking files...")
+print("Downloading files...")
 for sound_link in fileList:	
-        # variable Flushing
+  # variable Flushing
 	name = ""
 	title = ""
 	link = ""
 	descr = ""
 	releaseDate = ""
 	trackNum = ""
-  
+
 	recordingPage = sound_link.get_attribute("href")
-	url_split = recordingPage.split("/")
+	if recordingPage is not None:
+		url_split = recordingPage.split("/")
+		
+		# ---- get recording title ----
+		title = url_split[-1].replace("-", " ")  # make pretty
 
-	# ---- get recording title ----
-	title = url_split[-1].replace("-", " ")  # make pretty
+		recording_path = '{0}/{1}.m4a'.format(userDirectory, title)
+		if not(os.path.isfile(recording_path)):
+			#print("Title: " + title)
+			recording_driver.get(recordingPage)
+			time.sleep(2)  # slow your roll let it load, req'd to give time for file url to return
+		
+			# ---- get artist ----
+			# name = recording_driver.find_element(By.XPATH,'/html/body/div[1]/a', ).text.replace("'", "").replace('"', "").replace('/', " ").replace('*', " ")
+			# print("name: " + name)
 
-	recording_path = '/mnt/pond/media/Audio/GWA/{0}/{1}.m4a'.format(user, title)
-	if not(os.path.isfile(recording_path)):
-		#print("Title: " + title)
-		recording_driver.get(recordingPage)
-		time.sleep(2)  # slow your roll let it load, req'd to give time for file url to return
-	
-		# ---- get artist ----
-		# name = recording_driver.find_element(By.XPATH,'/html/body/div[1]/a', ).text.replace("'", "").replace('"', "").replace('/', " ").replace('*', " ")
-		# print("name: " + name)
+			# ---- get recording description ----
+			descr = recording_driver.find_element(By.CLASS_NAME,"jp-description").text
+			descr = descr.replace("'", "") # removing quote characters from metadata, see TIDAL script for more correct fix
+			# print("descr: " + descr)
 
-		# ---- get recording description ----
-		descr = recording_driver.find_element(By.CLASS_NAME,"jp-description").text
-		descr = descr.replace("'", "") # removing quote characters from metadata, see TIDAL script for more correct fix
-		# print("descr: " + descr)
+			# ---- get audio file url ----
+			link = recording_driver.find_element(By.XPATH,'//*[@id="jp_audio_0"]').get_attribute("src")
+			# print("link: " + link)
+		
+			# ---- download audio file ----
+			w_Get_command = "wget {0} -nv -c -O '{1}' > /dev/null 2>&1".format(link, recording_path)# .split()
+			os.system(w_Get_command)
+			
+			# ---- get date of soundgasm file, seems to be the upload date ----            
+			modDate = os.path.getmtime(recording_path) # %m/%d/%Y
+			# releaseDate = (datetime.datetime.fromtimestamp(modDate).strftime("%m-%d-%Y"))
+			releaseDate = (datetime.datetime.fromtimestamp(modDate).strftime("%Y-%m-%d"))
+			print(releaseDate + " " + title)
+			with open(recording_path, 'r+b') as file:
+				media_file = mutagen.File(file, easy=True)
+				media_file['title'] = title
+				media_file['album'] = user # title
+				media_file['artist'] = user
+				media_file['comment'] = descr
+				media_file['date'] = releaseDate
+				media_file['tracknumber'] = str((totalItems - (newItems + existItems))) + '/0'
+				media_file.save(file)
+			newItems = newItems + 1
 
-		# ---- get audio file url ----
-		link = recording_driver.find_element(By.XPATH,'//*[@id="jp_audio_0"]').get_attribute("src")
-		# print("link: " + link)
-	
-		# ---- download audio file ----
-		w_Get_command = "wget {0} -nv -c -O '{1}' > /dev/null 2>&1".format(link, recording_path)# .split()
-		os.system(w_Get_command)
-    
-		# ---- get date of soundgasm file, seems to be the upload date ----            
-		modDate = os.path.getmtime(recording_path) # %m/%d/%Y
-		# releaseDate = (datetime.datetime.fromtimestamp(modDate).strftime("%m-%d-%Y"))
-		releaseDate = (datetime.datetime.fromtimestamp(modDate).strftime("%Y-%m-%d"))
-		print(releaseDate + " " + title)
-		with open(recording_path, 'r+b') as file:
-			media_file = mutagen.File(file, easy=True)
-			media_file['title'] = title
-			media_file['album'] = user # title
-			media_file['artist'] = user
-			media_file['comment'] = descr
-			media_file['date'] = releaseDate
-			media_file['tracknumber'] = str((totalItems - (newItems + existItems))) + '/0'
-			media_file.save(file)
-		newItems = newItems + 1
-
+		else:
+			existItems = existItems + 1
 	else:
-		existItems = existItems + 1
+		print("Broken Link")
 
 print("\n---- Track Summary ----\nExisting:\t" + str(existItems) + "\nNew:\t\t" + str(newItems)+ "\nTotal:\t\t" + str(totalItems))
 driver.quit()
